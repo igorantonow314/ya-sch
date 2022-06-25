@@ -4,7 +4,7 @@ import os
 import pytest
 import sqlalchemy
 
-from db.db import DB
+from db.db import DB, ShopUnit
 
 TEST_DB_NAME = "test-db.db"
 
@@ -56,6 +56,11 @@ SHOP_UNIT_EXAMPLES = [
 
 
 @pytest.mark.parametrize("shop_unit", SHOP_UNIT_EXAMPLES)
+def test_equals(shop_unit):
+    assert ShopUnit(**shop_unit) == ShopUnit(**shop_unit)
+
+
+@pytest.mark.parametrize("shop_unit", SHOP_UNIT_EXAMPLES)
 def test_db_insert(db, shop_unit):
     db.insert(**shop_unit)
     with pytest.raises(sqlalchemy.exc.IntegrityError):
@@ -74,3 +79,17 @@ def test_db_insert_or_update(db, shop_unit):
     db.insert_or_update(**shop_unit)
     db.insert_or_update(**shop_unit)
     db.insert_or_update(**shop_unit)
+
+
+def test_db_get(db):
+    for shop_unit in SHOP_UNIT_EXAMPLES:
+        db.insert(**shop_unit)
+        s = db.get(id=shop_unit["id"])
+        assert s == ShopUnit(**shop_unit)
+    for shop_unit in SHOP_UNIT_EXAMPLES:
+        s = db.get(id=shop_unit["id"])
+        assert s == ShopUnit(**shop_unit)
+    for shop_unit in SHOP_UNIT_EXAMPLES:
+        db.insert_or_update(**shop_unit)
+        s = db.get(id=shop_unit["id"])
+        assert s == ShopUnit(**shop_unit)

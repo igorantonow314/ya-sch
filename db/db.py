@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from sqlalchemy import create_engine
 from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy import update
@@ -19,7 +21,19 @@ class ShopUnit(Base):
     price = Column(Integer)
 
     def __repr__(self):
-        return f"ShopUnit(id={self.id!r}, name={self.name!r})"
+        return f"ShopUnit(id={self.id!r}, name={self.name!r}, date={self.date!r})"
+
+    def __eq__(self, other):
+        classes_match = isinstance(other, self.__class__)
+        a, b = deepcopy(self.__dict__), deepcopy(other.__dict__)
+        #compare based on equality our attributes, ignoring SQLAlchemy internal stuff
+        a.pop('_sa_instance_state', None)
+        b.pop('_sa_instance_state', None)
+        attrs_match = (a == b)
+        return classes_match and attrs_match
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
 
 class DB:
@@ -44,3 +58,7 @@ class DB:
             else:
                 session.add(ShopUnit(id=su_id, **data))
             session.commit()
+
+    def get(self, id):
+        with Session(self.engine) as session:
+            return session.get(ShopUnit, id)
