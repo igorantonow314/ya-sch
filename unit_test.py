@@ -164,6 +164,59 @@ EXPECTED_TREE = {
     ]
 }
 
+INVALID_IMPORT_BATCHES = [
+    {
+        "items": [{"type": "CATEGORY", "parentId": None}],
+        "updateDate": "2022-02-01T12:00:00.000Z",
+    },
+    {
+        "items": [{"id": "069cb8d7-bbdd-47d3-ad8f-82ef4c269df1", "parentId": None}],
+        "updateDate": "2022-02-01T12:00:00.000Z",
+    },
+    {
+        "items": [
+            {
+                "name": "Товары",
+                "id": "069cb8d7-bbdd-47d3-ad8f-82ef4c269df1",
+                "parentId": None,
+            }
+        ],
+        "updateDate": "2022-02-01T12:00:00.000Z",
+    },
+    {
+        "items": [
+            {
+                "type": "CATEGORY",
+                "id": "069cb8d7-bbdd-47d3-ad8f-82ef4c269df1",
+                "parentId": None,
+            }
+        ],
+        "updateDate": "2022-02-01T12:00:00.000Z",
+    },
+    {
+        "items": [
+            {
+                "type": "OFFER",
+                "id": "73bc3b36-02d1-4245-ab35-3106c9ee1c65",
+                "parentId": "1cc0129a-2bfe-474c-9ee6-d435bf5fc8f2",
+                "price": 69999,
+            }
+        ],
+        "updateDate": "2022-02-03T15:00:00.000Z",
+    },
+    {
+        "items": [
+            {
+                "type": "OFFER",
+                "name": 'Goldstar 65" LED UHD LOL Very Smart',
+                "parentId": "1cc0129a-2bfe-474c-9ee6-d435bf5fc8f2",
+                "price": 69999,
+            }
+        ],
+        "updateDate": "2022-02-03T15:00:00.000Z",
+    },
+]
+
 
 def request(path, method="GET", data=None, json_response=False):
     try:
@@ -221,6 +274,17 @@ def test_import():
     print("Test import passed.")
 
 
+def test_import_invalid():
+    for index, batch in enumerate(INVALID_IMPORT_BATCHES):
+        print(f"Trying to import invalid batch {index}")
+        status, response = request("/imports", method="POST", data=batch)
+
+        assert status == 400, f"Expected HTTP status code 400, got {status}"
+
+        assert response["code"] == 400
+        assert response["message"] == "Validation Failed"
+
+
 def test_nodes():
     status, response = request(f"/nodes/{ROOT_ID}", json_response=True)
     # print(json.dumps(response, indent=2, ensure_ascii=False))
@@ -270,6 +334,7 @@ def test_delete():
 
 def test_all():
     test_import()
+    test_import_invalid()
     test_nodes()
     test_sales()
     test_stats()
