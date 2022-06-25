@@ -1,3 +1,4 @@
 black
 flake8
+pytest
 # and all from requirements.txt
