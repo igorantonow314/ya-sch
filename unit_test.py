@@ -343,8 +343,8 @@ def test_all():
     test_import()
     test_import_invalid()
     test_nodes()
-    test_sales()
-    test_stats()
+    # test_sales()
+    # test_stats()
     test_delete()
 
 

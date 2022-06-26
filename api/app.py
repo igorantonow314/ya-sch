@@ -35,10 +35,13 @@ async def imports(request):
     return web.json_response(data, status=200)
 
 
-@routes.delete("/delete")
+@routes.delete("/delete/{id}")
 async def delete(request):
+    uuid = request.match_info["id"]
+    if not db.get(uuid):
+        return web.json_response({"code": 404, "message": "Item not found"}, status=404)
+    db.delete_recursive(uuid)
     data = dict()
-    ...
     return web.json_response(data, status=200)
 
 
