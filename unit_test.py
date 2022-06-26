@@ -287,6 +287,10 @@ def test_import_invalid():
         # assert (response["message"] == "Validation Failed",
         #         f'wrong message: {response["message"]}')
 
+        # TODO: add tests for validation parentId !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    print("Test invalid_import passed.")
+
 
 def test_nodes():
     status, response = request(f"/nodes/{ROOT_ID}", json_response=True)

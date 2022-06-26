@@ -1,3 +1,4 @@
+import logging
 from copy import deepcopy
 
 from sqlalchemy import create_engine
@@ -6,6 +7,9 @@ from sqlalchemy import update, delete, select
 
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import Session
+
+
+log = logging.getLogger(__name__)
 
 Base = declarative_base()
 
@@ -49,6 +53,7 @@ class DB:
             session.commit()
 
     def insert_or_update(self, **data):
+        log.debug(data)
         su_id = data.pop("id")
         with Session(self.engine) as session:
             if session.get(ShopUnit, su_id):

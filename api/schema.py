@@ -37,3 +37,5 @@ class ShopUnitImportRequest(Schema):
             parser.parse(value)
         except parser.ParseError:
             raise ValidationError("Error while parsing updateDate")
+
+    # TODO: add verification for items!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

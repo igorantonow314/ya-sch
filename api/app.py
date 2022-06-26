@@ -1,14 +1,18 @@
 import logging
 
 from aiohttp import web
+from dateutil import parser
 from marshmallow import ValidationError
 
-from schema import ShopUnitImportRequest
+from .schema import ShopUnitImportRequest
+from db.db import DB
 
 
 routes = web.RouteTableDef()
 
 log = logging.getLogger(__name__)
+
+db = DB()
 
 
 @routes.post("/imports")
@@ -24,7 +28,8 @@ async def imports(request):
         return web.json_response(
             {"code": 400, "message": "Validation Failed"}, status=400
         )
-    ...
+    for item in body["items"]:
+        db.insert_or_update(date=parser.parse(body["updateDate"]), **item)
     return web.json_response(data, status=200)
 
 
