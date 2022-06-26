@@ -2,7 +2,7 @@ from copy import deepcopy
 
 from sqlalchemy import create_engine
 from sqlalchemy import Column, Integer, String, DateTime
-from sqlalchemy import update, delete
+from sqlalchemy import update, delete, select
 
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import Session
@@ -66,6 +66,16 @@ class DB:
     def delete(self, id):
         with Session(self.engine) as session:
             if not session.get(ShopUnit, id):
-                raise ValueError(f"Element with id {id} does not found")
+                raise ValueError(f"Element with id {id} was not found")
             session.execute(delete(ShopUnit).where(ShopUnit.id == id))
             session.commit()
+
+    def get_children(self, id):
+        with Session(self.engine) as session:
+            if session.get(ShopUnit, id) is None:
+                raise ValueError(f"ShopUnit with id {id} was not found")
+            query = select(ShopUnit.id).where(ShopUnit.parentId == id)
+            r = list(session.execute(query))
+            if len(r) == 0:
+                return None
+            return [row[0] for row in r]
