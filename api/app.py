@@ -2,6 +2,7 @@ import logging
 from math import floor
 
 from aiohttp import web
+from aiomisc import bind_socket
 from dateutil import parser
 from marshmallow import ValidationError
 
@@ -91,9 +92,11 @@ async def get(request):
 
 
 def run_app():
+    sock = bind_socket(address='0.0.0.0', port=8080,
+                       proto_name='http')
     app = web.Application()
     app.add_routes(routes)
-    web.run_app(app)
+    web.run_app(app, sock=sock)
 
 
 if __name__ == "__main__":
