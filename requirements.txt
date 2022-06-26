@@ -1,2 +1,5 @@
 aiohttp
-sqlalchemy
+aiomisc
+python-dateutil
+marshmallow
+SQLAlchemy==1.4.39

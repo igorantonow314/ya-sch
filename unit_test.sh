@@ -1,6 +1,6 @@
 #! /bin/bash
 
-python api/app.py &
+python api &
 sleep 1
 python unit_test.py "http://localhost:8080"
 status_code=$?
