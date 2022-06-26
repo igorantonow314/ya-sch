@@ -30,6 +30,7 @@ async def imports(request):
         )
     for item in body["items"]:
         db.insert_or_update(date=parser.parse(body["updateDate"]), **item)
+        db.update_date(id=item["id"], datetime=parser.parse(body["updateDate"]))
     return web.json_response(data, status=200)
 
 
@@ -40,10 +41,27 @@ async def delete(request):
     return web.json_response(data, status=200)
 
 
+def get_node_json(uuid):
+    node = db.get(uuid)
+    if not node:
+        raise ValueError
+    data = node.as_dict()
+    children = db.get_children(uuid)
+    if children:
+        data["children"] = []
+        for child in children:
+            data["children"].append(get_node_json(child))
+    else:
+        data["children"] = None
+    return data
+
+
 @routes.get("/nodes/{id}")
 async def get(request):
-    data = dict()
-    ...
+    uuid = request.match_info["id"]
+    if not db.get(uuid):
+        return web.json_response({"code": 404, "message": "Item not found"}, status=404)
+    data = get_node_json(uuid)
     return web.json_response(data, status=200)
 
 

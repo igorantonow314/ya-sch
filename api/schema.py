@@ -39,3 +39,13 @@ class ShopUnitImportRequest(Schema):
             raise ValidationError("Error while parsing updateDate")
 
     # TODO: add verification for items!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+class ShopUnit(Schema):
+    id = fields.Str(required=True)
+    name = fields.Str(required=True)
+    date = fields.Str(required=True)
+    parentId = fields.Str(allow_none=True)
+    type = fields.Str(validate=OneOf(["OFFER", "CATEGORY"]), required=True)
+    price = fields.Int(validate=Range(min=0), allow_none=True)
+    # children -- добавляется на лету

@@ -1,3 +1,4 @@
+import datetime
 import logging
 from copy import deepcopy
 
@@ -14,6 +15,15 @@ log = logging.getLogger(__name__)
 Base = declarative_base()
 
 
+def format_date(n):
+    res = (
+        datetime.datetime.strftime(n, "%Y-%m-%dT%H:%M:%S")
+        + datetime.datetime.strftime(n, ".%f")[:4]
+        + (datetime.datetime.strftime(n, "%z") or "Z")
+    )
+    return res
+
+
 class ShopUnit(Base):
     __tablename__ = "shop_units"
 
@@ -23,6 +33,17 @@ class ShopUnit(Base):
     parentId = Column(Integer)
     type = Column(String, nullable=False)
     price = Column(Integer)
+
+    def as_dict(self):
+        ret = {
+            "id": self.id,
+            "name": self.name,
+            "date": format_date(self.date),
+            "parentId": self.parentId,
+            "type": self.type,
+            "price": self.price,
+        }
+        return ret
 
     def __repr__(self):
         return f"ShopUnit(id={self.id!r}, name={self.name!r}, date={self.date!r})"
@@ -53,7 +74,6 @@ class DB:
             session.commit()
 
     def insert_or_update(self, **data):
-        log.debug(data)
         su_id = data.pop("id")
         with Session(self.engine) as session:
             if session.get(ShopUnit, su_id):
@@ -96,3 +116,15 @@ class DB:
         # note: all children's id (the whole stack) can be obtained with
         # a single sql query
         # TODO: implement this
+
+    def update_date(self, id, datetime):
+        with Session(self.engine) as session:
+            while id:
+                t = session.get(ShopUnit, id)
+                if not t:
+                    raise ValueError(f"ShopUnit with id {id} was not found")
+                session.execute(
+                    update(ShopUnit).where(ShopUnit.id == id).values(date=datetime)
+                )
+                id = t.parentId
+            session.commit()
