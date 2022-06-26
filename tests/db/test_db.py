@@ -196,8 +196,61 @@ def test_db_get_children(db):
         "74b81fda-9cdc-4b63-8927-c978afed5cf4",
         "73bc3b36-02d1-4245-ab35-3106c9ee1c65",
     ]
+    db.delete("73bc3b36-02d1-4245-ab35-3106c9ee1c65")
+    assert db.get_children("1cc0129a-2bfe-474c-9ee6-d435bf5fc8f2") == [
+        "98883e8f-0507-482f-bce2-2fb306cf6483",
+        "74b81fda-9cdc-4b63-8927-c978afed5cf4",
+    ]
     # Samson 70: это OFFER
     assert db.get_children("98883e8f-0507-482f-bce2-2fb306cf6483") is None
     # Несуществующий товар
     with pytest.raises(ValueError):
         db.get_children("non-valid-id")
+    db.delete("1cc0129a-2bfe-474c-9ee6-d435bf5fc8f2")  # телевизоры
+    with pytest.raises(ValueError):
+        db.get_children("1cc0129a-2bfe-474c-9ee6-d435bf5fc8f2")
+
+
+def test_delete_recursive(db):
+    for shop_unit in SHOP_UNIT_EXAMPLES:
+        db.insert(**shop_unit)
+
+    # Удаление смартфонов
+    db.delete_recursive("d515e43f-f3f6-4471-bb77-6b455017a2d2")
+    assert db.get("d515e43f-f3f6-4471-bb77-6b455017a2d2") is None  # Смартфоны удалены
+    assert db.get("863e1a7a-1304-42ae-943b-179184c077e3") is None  # jPhone 13 удалён
+    assert db.get("b1d8fd7d-2ae3-47d5-b2f9-0f094af800d4") is None  # Xomia удалён
+    # Товары: телевизоры, нет смартфонов
+    assert db.get_children("069cb8d7-bbdd-47d3-ad8f-82ef4c269df1") == [
+        "1cc0129a-2bfe-474c-9ee6-d435bf5fc8f2",
+    ]
+    # Телевизоры: в сохранности
+    assert db.get_children("1cc0129a-2bfe-474c-9ee6-d435bf5fc8f2") == [
+        "98883e8f-0507-482f-bce2-2fb306cf6483",
+        "74b81fda-9cdc-4b63-8927-c978afed5cf4",
+        "73bc3b36-02d1-4245-ab35-3106c9ee1c65",
+    ]
+
+    # Удаление OFFER: Samson 70
+    db.delete_recursive("98883e8f-0507-482f-bce2-2fb306cf6483")
+    assert db.get("98883e8f-0507-482f-bce2-2fb306cf6483") is None  # Samson 70 удалён
+    # телевизоры:
+    assert db.get_children("1cc0129a-2bfe-474c-9ee6-d435bf5fc8f2") == [
+        "74b81fda-9cdc-4b63-8927-c978afed5cf4",
+        "73bc3b36-02d1-4245-ab35-3106c9ee1c65",
+    ]
+
+    # Удаление оставшихся телевизоров
+    db.delete_recursive("1cc0129a-2bfe-474c-9ee6-d435bf5fc8f2")
+    assert db.get("1cc0129a-2bfe-474c-9ee6-d435bf5fc8f2") is None  # телевизоры удалены
+    assert db.get("74b81fda-9cdc-4b63-8927-c978afed5cf4") is None  # Phyllis удалён
+    assert db.get("73bc3b36-02d1-4245-ab35-3106c9ee1c65") is None  # Goldstar 65 удалён
+    assert db.get("98883e8f-0507-482f-bce2-2fb306cf6483") is None  # Samson давно удалён
+    # Категорий товаров не осталось:
+    assert db.get_children("069cb8d7-bbdd-47d3-ad8f-82ef4c269df1") is None
+
+    # Удаление несуществующего элемента
+    with pytest.raises(ValueError):
+        db.delete_recursive("98883e8f-0507-482f-bce2-2fb306cf6483")  # Samson 70
+    with pytest.raises(ValueError):
+        db.delete_recursive("non-valid-id")

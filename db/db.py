@@ -79,3 +79,15 @@ class DB:
             if len(r) == 0:
                 return None
             return [row[0] for row in r]
+
+    def delete_recursive(self, id):
+        stack = [id]
+        while stack:
+            t = stack.pop(0)
+            ch = self.get_children(t)
+            if ch:
+                stack.extend(ch)
+            self.delete(t)
+        # note: all children's id (the whole stack) can be obtained with
+        # a single sql query
+        # TODO: implement this
