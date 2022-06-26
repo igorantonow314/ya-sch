@@ -5,3 +5,6 @@ shop.db
 test-db.db
 .coverage
 htmlcov
+tmp
+*.log
+t
