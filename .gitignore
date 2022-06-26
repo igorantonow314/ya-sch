@@ -3,3 +3,5 @@ expected.json
 response.json
 shop.db
 test-db.db
+.coverage
+htmlcov

@@ -2,7 +2,7 @@ from copy import deepcopy
 
 from sqlalchemy import create_engine
 from sqlalchemy import Column, Integer, String, DateTime
-from sqlalchemy import update
+from sqlalchemy import update, delete
 
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import Session
@@ -26,10 +26,10 @@ class ShopUnit(Base):
     def __eq__(self, other):
         classes_match = isinstance(other, self.__class__)
         a, b = deepcopy(self.__dict__), deepcopy(other.__dict__)
-        #compare based on equality our attributes, ignoring SQLAlchemy internal stuff
-        a.pop('_sa_instance_state', None)
-        b.pop('_sa_instance_state', None)
-        attrs_match = (a == b)
+        # compare based on equality our attributes, ignoring SQLAlchemy internal stuff
+        a.pop("_sa_instance_state", None)
+        b.pop("_sa_instance_state", None)
+        attrs_match = a == b
         return classes_match and attrs_match
 
     def __ne__(self, other):
@@ -62,3 +62,10 @@ class DB:
     def get(self, id):
         with Session(self.engine) as session:
             return session.get(ShopUnit, id)
+
+    def delete(self, id):
+        with Session(self.engine) as session:
+            if not session.get(ShopUnit, id):
+                raise ValueError(f"Element with id {id} does not found")
+            session.execute(delete(ShopUnit).where(ShopUnit.id == id))
+            session.commit()

@@ -93,3 +93,35 @@ def test_db_get(db):
         db.insert_or_update(**shop_unit)
         s = db.get(id=shop_unit["id"])
         assert s == ShopUnit(**shop_unit)
+
+
+@pytest.mark.parametrize("shop_unit", SHOP_UNIT_EXAMPLES)
+def test_db_delete_one(db, shop_unit):
+    db.insert(**shop_unit)
+    assert db.get(shop_unit["id"]) == ShopUnit(**shop_unit)
+    db.delete(shop_unit["id"])
+    assert db.get(shop_unit["id"]) is None
+    with pytest.raises(ValueError):
+        db.delete(shop_unit["id"])
+
+
+def test_db_delete(db):
+    db.insert(**SHOP_UNIT_EXAMPLES[0])
+    db.insert(**SHOP_UNIT_EXAMPLES[1])
+    db.delete(SHOP_UNIT_EXAMPLES[0]["id"])
+    with pytest.raises(ValueError):
+        db.delete(SHOP_UNIT_EXAMPLES[0]["id"])
+    db.delete(SHOP_UNIT_EXAMPLES[1]["id"])
+    with pytest.raises(ValueError):
+        db.delete(SHOP_UNIT_EXAMPLES[1]["id"])
+
+
+def test_db_delete_2(db):
+    db.insert(**SHOP_UNIT_EXAMPLES[1])
+    db.insert(**SHOP_UNIT_EXAMPLES[0])
+    db.delete(SHOP_UNIT_EXAMPLES[0]["id"])
+    with pytest.raises(ValueError):
+        db.delete(SHOP_UNIT_EXAMPLES[0]["id"])
+    db.delete(SHOP_UNIT_EXAMPLES[1]["id"])
+    with pytest.raises(ValueError):
+        db.delete(SHOP_UNIT_EXAMPLES[1]["id"])
