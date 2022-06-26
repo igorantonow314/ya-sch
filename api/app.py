@@ -1,4 +1,5 @@
 import logging
+from math import floor
 
 from aiohttp import web
 from dateutil import parser
@@ -41,7 +42,7 @@ async def delete(request):
     return web.json_response(data, status=200)
 
 
-def get_node_json(uuid):
+def get_node_json(uuid, _add_childs_info=False):
     node = db.get(uuid)
     if not node:
         raise ValueError
@@ -49,10 +50,31 @@ def get_node_json(uuid):
     children = db.get_children(uuid)
     if children:
         data["children"] = []
+        ch_n = 0
+        ch_sum = 0
         for child in children:
-            data["children"].append(get_node_json(child))
+            c = get_node_json(child, _add_childs_info=True)
+            ch_n += c.pop("childs_count")
+            ch_sum += c.pop("childs_sum")
+            data["children"].append(c)
+        if data["type"] == "CATEGORY":
+            data["price"] = floor(ch_sum / ch_n) if ch_n else 0
+        if _add_childs_info:
+            data["childs_count"] = ch_n
+            data["childs_sum"] = ch_sum
     else:
-        data["children"] = None
+        if data["type"] == "CATEGORY":
+            data["children"] = []
+            data["price"] = None
+        else:
+            data["children"] = None
+        if _add_childs_info:
+            if data["type"] == "CATEGORY":
+                data["childs_count"] = 0
+                data["childs_sum"] = 0
+            else:
+                data["childs_count"] = 1
+                data["childs_sum"] = data["price"]
     return data
 
 
